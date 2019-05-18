@@ -18,6 +18,8 @@ END;
 CREATE OR REPLACE PACKAGE pck_produse AS
   FUNCTION adauga_produs (p_nume_produs varchar2, p_pret number, p_descriere varchar2, p_id_categorie number, p_stoc number ) return number;
   FUNCTION editeaza_produs ( p_id_produs number, p_pret_nou number, p_descriere_noua varchar2, p_id_categorie_noua number ) return number ;
+  FUNCTION sterge_produs ( p_id_produs number ) return number;
+  FUNCTION editeaza_stoc ( p_id_produs number, p_stoc_nou number ) return number ;
 END pck_produse;
 
 
@@ -64,6 +66,32 @@ CREATE OR REPLACE PACKAGE BODY pck_produse AS
         return 0;
     END editeaza_produs;
   
+  
+    FUNCTION sterge_produs ( p_id_produs number ) return number AS
+    BEGIN
+      DELETE FROM LEG_CAT_PROD WHERE ID_PRODUS = p_id_produs;
+      DELETE FROM LEG_STOC WHERE ID_PRODUS = p_id_produs;
+      DELETE FROM PRODUSE WHERE ID_PRODUS = p_id_produs;
+      COMMIT; 
+      return 1;   
+      exception
+      when OTHERS then
+      return 0;
+    END sterge_produs;
+    
+    
+    FUNCTION editeaza_stoc ( p_id_produs number, p_stoc_nou number ) return number AS
+    BEGIN
+        UPDATE LEG_STOC
+        SET  
+        stoc = p_stoc_nou
+        WHERE id_produs = p_id_produs;
+        COMMIT; 
+        return 1;
+        exception
+        when OTHERS then
+        return 0;
+    END editeaza_stoc;
 
 END pck_produse;
 
@@ -87,7 +115,6 @@ begin
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
-
 set serveroutput on;
 declare 
    v_id produse.id_produs%type;
@@ -103,7 +130,28 @@ begin
     l_result := pck_produse.editeaza_produs(v_id, v_pret, v_descriere, v_id_categorie);
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
-
+/
+set serveroutput on;
+declare 
+   v_id produse.id_produs%type;
+   l_result NUMBER;
+begin  
+    v_id := 1000007;
+    l_result := pck_produse.sterge_produs(v_id);
+   DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/
+set serveroutput on;
+declare 
+   v_id produse.id_produs%type;
+   v_stoc_nou number;
+   l_result NUMBER;
+begin  
+    v_id := 1000006;
+    v_stoc_nou := 43;
+    l_result := pck_produse.editeaza_stoc(v_id,v_stoc_nou);
+   DBMS_OUTPUT.PUT_LINE(l_result);
+end;
 
 
 /
