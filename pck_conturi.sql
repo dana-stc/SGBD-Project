@@ -15,7 +15,7 @@ END;
 
 /
 CREATE OR REPLACE PACKAGE pck_conturi AS
-	 function utilizator_valid( p_utilizator varchar2, p_parola varchar2 )RETURN number ;
+   function utilizator_valid( p_utilizator varchar2, p_parola varchar2 )RETURN number ;
    function inserare_utilizator( p_utilizator varchar2, p_parola varchar2, p_is_admin number ) return number ;
    function sterge_utilizator(p_utilizator varchar2) return number ;
    function modifica_utilizator(p_utilizator varchar2, p_parola_noua varchar2, p_is_admin number) return number ;
@@ -46,47 +46,41 @@ CREATE OR REPLACE PACKAGE BODY pck_conturi AS
 
 
    function inserare_utilizator( p_utilizator varchar2, p_parola varchar2, p_is_admin number ) return number IS
-   i NUMBER; 
    BEGIN
     INSERT INTO CONTURI (UTILIZATOR, PAROLA, ISADMIN)
     VALUES (p_utilizator, p_parola, p_is_admin);
-    i := SQL%rowcount; 
     COMMIT; 
-    IF i > 0 THEN
-    RETURN 1;
-    END IF;
-    RETURN 0;
+    return 1;   
+    exception
+    when OTHERS then
+    return 0;
    END inserare_utilizator;
 
 
     function sterge_utilizator(p_utilizator varchar2) return number IS
-    i NUMBER; 
     BEGIN
       DELETE FROM ISTORIC WHERE UTILIZATOR = p_utilizator;
       DELETE FROM CONTURI WHERE UTILIZATOR = p_utilizator;
-      i := SQL%rowcount; 
       COMMIT; 
-      IF i > 0 THEN
-      RETURN 1;
-      END IF;
-     RETURN 0;
+      return 1;   
+      exception
+      when OTHERS then
+      return 0;
     END sterge_utilizator;
 
     
     function modifica_utilizator(p_utilizator varchar2, p_parola_noua varchar2, p_is_admin number) return number IS 
-    i NUMBER; 
     BEGIN
         UPDATE CONTURI
         SET  
         PAROLA = p_parola_noua,
         ISADMIN = p_is_admin
         WHERE UTILIZATOR = p_utilizator;
-        i := SQL%rowcount; 
         COMMIT; 
-        IF i > 0 THEN
-        RETURN 1;
-        END IF;
-     RETURN 0;
+        return 1;   
+      	exception
+      	when OTHERS then
+      	return 0;
    END modifica_utilizator;
 
    
