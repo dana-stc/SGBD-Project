@@ -1,8 +1,10 @@
 CREATE OR REPLACE PACKAGE pck_mese AS
+  TYPE linie_mese IS TABLE OF mese%ROWTYPE;
   function set_masa_disponibila(p_numar_masa number) return number;
   function set_masa_rezervata(p_numar_masa number) return number;
   function set_masa_ocupata(p_numar_masa number) return number;
   function adaugaRezervare(p_numar_masa number, p_data_rezervare timestamp, p_mentiune varchar2) return number;
+  function preia_tabel_mese return linie_mese ;
 END pck_mese;
 
 
@@ -66,6 +68,15 @@ CREATE OR REPLACE PACKAGE BODY pck_mese AS
       	return 0;
    END adaugaRezervare;
    
+   
+   function preia_tabel_mese return linie_mese IS
+   lista_mese linie_mese;
+      BEGIN
+      SELECT * BULK COLLECT INTO lista_mese FROM MESE;
+      return lista_mese;  
+   end preia_tabel_mese;
+   
+   
 END pck_mese;
 
 
@@ -113,4 +124,16 @@ begin
     v_mentiune := 'for Dany';
     l_result := pck_mese.adaugaRezervare(v_numar_masa,v_data_rezervare,v_mentiune);
     DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/
+set serveroutput on;
+declare 
+   l_result pck_mese.linie_mese;
+begin   
+   l_result := pck_mese.preia_tabel_mese();
+     for i in l_result.first..l_result.last loop
+        if l_result.exists(i) then 
+           DBMS_OUTPUT.PUT_LINE( l_result(i).id_MASA||' - '||l_result(i).NUMAR || ' - '||l_result(i).STATUS || ' - '||l_result(i).DATA_REZERVARE || ' - '||l_result(i).MENTIUNE);  
+        end if;
+    end loop;   
 end;

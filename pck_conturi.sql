@@ -15,11 +15,12 @@ END;
 
 /
 CREATE OR REPLACE PACKAGE pck_conturi AS
+   TYPE linie_cont IS TABLE OF conturi%ROWTYPE;
    function utilizator_valid( p_utilizator varchar2, p_parola varchar2 )RETURN number ;
    function inserare_utilizator( p_utilizator varchar2, p_parola varchar2, p_is_admin number ) return number ;
    function sterge_utilizator(p_utilizator varchar2) return number ;
    function modifica_utilizator(p_utilizator varchar2, p_parola_noua varchar2, p_is_admin number) return number ;
-   --function preia_tabel_utilizatori() return table ;
+   function preia_tabel_utilizatori return linie_cont ;
 END pck_conturi;
 
 CREATE OR REPLACE PACKAGE BODY pck_conturi AS
@@ -83,6 +84,14 @@ CREATE OR REPLACE PACKAGE BODY pck_conturi AS
       	return 0;
    END modifica_utilizator;
 
+
+   function preia_tabel_utilizatori return linie_cont IS
+      lista_conturi linie_cont;
+      BEGIN
+      SELECT * BULK COLLECT INTO lista_conturi FROM conturi;
+      return lista_conturi;  
+   end preia_tabel_utilizatori;
+  
    
 END pck_conturi;
 
@@ -96,7 +105,6 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /  
-
 set serveroutput on;
 declare 
    v_utilizator varchar2(30);
@@ -111,7 +119,6 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
- 
  set serveroutput on;
 declare 
    v_utilizator varchar2(30);
@@ -122,7 +129,6 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
- 
 set serveroutput on;
 declare 
    v_utilizator varchar2(30);
@@ -135,4 +141,16 @@ begin
      v_is_admin := 0;
      l_result := pck_conturi.modifica_utilizator(v_utilizator, v_parola_noua, v_is_admin);
    DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/
+set serveroutput on;
+declare 
+   l_result pck_conturi.linie_cont;
+begin   
+   l_result := pck_conturi.preia_tabel_utilizatori();
+     for i in l_result.first..l_result.last loop
+        if l_result.exists(i) then 
+           DBMS_OUTPUT.PUT_LINE( l_result(i).id_cont||' - '||l_result(i).utilizator || ' - '||l_result(i).parola || ' - '||l_result(i).isadmin);  
+        end if;
+    end loop;   
 end;

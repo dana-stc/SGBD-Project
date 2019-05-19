@@ -16,10 +16,12 @@ END;
 
 
 CREATE OR REPLACE PACKAGE pck_produse AS
+  TYPE LINIE_PRODUS IS TABLE OF PRODUSE%ROWTYPE;
   FUNCTION adauga_produs (p_nume_produs varchar2, p_pret number, p_descriere varchar2, p_id_categorie number, p_stoc number ) return number;
   FUNCTION editeaza_produs ( p_id_produs number, p_pret_nou number, p_descriere_noua varchar2, p_id_categorie_noua number ) return number ;
   FUNCTION sterge_produs ( p_id_produs number ) return number;
   FUNCTION editeaza_stoc ( p_id_produs number, p_stoc_nou number ) return number ;
+  FUNCTION preia_tabel_produse return LINIE_PRODUS ;
 END pck_produse;
 
 
@@ -92,6 +94,15 @@ CREATE OR REPLACE PACKAGE BODY pck_produse AS
         when OTHERS then
         return 0;
     END editeaza_stoc;
+    
+    
+    FUNCTION preia_tabel_produse return LINIE_PRODUS AS
+      lista_produse LINIE_PRODUS;
+      BEGIN
+      SELECT * BULK COLLECT INTO lista_produse FROM produse;
+      return lista_produse;  
+   end preia_tabel_produse;
+
 
 END pck_produse;
 
@@ -151,6 +162,18 @@ begin
     v_stoc_nou := 43;
     l_result := pck_produse.editeaza_stoc(v_id,v_stoc_nou);
    DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/
+set serveroutput on;
+declare 
+   l_result pck_produse.LINIE_PRODUS;
+begin   
+   l_result := pck_produse.preia_tabel_produse();
+     for i in l_result.first..l_result.last loop
+        if l_result.exists(i) then 
+           DBMS_OUTPUT.PUT_LINE( l_result(i).id_produs||' - '||l_result(i).nume_produs || ' - '||l_result(i).pret || ' - '||l_result(i).descriere);  
+        end if;
+    end loop;   
 end;
 
 

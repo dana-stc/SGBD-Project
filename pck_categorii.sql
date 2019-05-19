@@ -16,9 +16,11 @@ END;
 
 
 CREATE OR REPLACE PACKAGE pck_categorii AS
+    TYPE linie_categorie IS TABLE OF categorii%ROWTYPE;
     FUNCTION editeaza_nume_categorie ( p_id_categorie number, p_nume_nou varchar2) return number ;
     FUNCTION adauga_categorie (p_nume_categorie varchar2) return number ;
     FUNCTION sterge_categorie ( p_id_categorie number) return number ;
+    FUNCTION preia_tabel_categorii return linie_categorie ;
     -- FUNCTION inlocuire_categorie( p_id_vechi number, p_id_nou number) return number ;
 END pck_categorii;
 
@@ -68,6 +70,14 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
   END sterge_categorie;
   
 
+  FUNCTION preia_tabel_categorii return linie_categorie IS
+      lista_categorii linie_categorie;
+      BEGIN
+      SELECT * BULK COLLECT INTO lista_categorii FROM CATEGORII;
+      return lista_categorii;  
+  end preia_tabel_categorii;
+
+
 END pck_categorii;
 /
 
@@ -104,9 +114,21 @@ begin
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
+set serveroutput on;
+declare 
+   l_result pck_categorii.linie_categorie;
+begin   
+   l_result := pck_categorii.preia_tabel_categorii();
+     for i in l_result.first..l_result.last loop
+        if l_result.exists(i) then 
+           DBMS_OUTPUT.PUT_LINE( l_result(i).ID_CATEGORIE||' - '||l_result(i).NUME);  
+        end if;
+    end loop;   
+end;
 
 
 
+/
 select count(*) from categorii;
 /
 select count(*) from leg_cat_prod;
