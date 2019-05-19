@@ -26,7 +26,7 @@ CREATE OR REPLACE PACKAGE BODY pck_incasari AS
     FUNCTION bani_incasati_astazi return double precision IS
       v_suma double precision;
     BEGIN
-      select sum(pret) into v_suma from incasari where data_incasare = SYSTIMESTAMP;
+      select sum(pret) into v_suma from incasari where extract(day from data_incasare) = extract(day from sysdate);
       return v_suma;
     END bani_incasati_astazi;
     
@@ -49,7 +49,7 @@ set serveroutput on;
 declare 
    l_result double precision;
 begin   
-    l_result := pck_incasari.bani_incasati_astazi(v_data1);
+    l_result := pck_incasari.bani_incasati_astazi();
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /

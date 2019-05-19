@@ -34,14 +34,13 @@ CREATE OR REPLACE PACKAGE BODY pck_conturi AS
     LOOP
         FETCH lista_useri_parole INTO v_user, v_password;
         EXIT WHEN lista_useri_parole%NOTFOUND;   
-    IF v_user = p_utilizator and v_password = p_parola THEN  
+    IF trim(v_user) = trim(p_utilizator) and trim(v_password) = trim(p_parola) THEN  
         return 1;
         ELSIF  v_user = p_utilizator and v_password != p_parola THEN 
-        return 0;
-        ELSE
-        return -1;
+        return 0;    
      END IF;
     END LOOP;
+    return -1;
    CLOSE lista_useri_parole;  
    END utilizator_valid;
 
@@ -101,7 +100,7 @@ set serveroutput on;
 declare 
    l_result NUMBER;
 begin   
-    l_result := pck_conturi.utilizator_valid('karateshine40' ,'acneequinox' );
+    l_result := pck_conturi.utilizator_valid('drowsilyrefresh20' ,'flossededmun,d' );
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /  
