@@ -1,14 +1,14 @@
 DROP SEQUENCE incasari_id_seq ;
 /
 CREATE SEQUENCE incasari_id_seq 
-  start with 1000001 
+  start with 2000001
   increment by 1;
 /
 CREATE or replace TRIGGER trigg_insert_new_id_incasari
   BEFORE INSERT ON incasari
   FOR EACH ROW
 BEGIN
-  SELECT conturi_id_seq.NEXTVAL
+  SELECT incasari_id_seq.NEXTVAL
   INTO   :new.id
   FROM   dual;
 END;
@@ -19,7 +19,7 @@ CREATE OR REPLACE PACKAGE pck_incasari AS
    FUNCTION bani_incasati_interval ( p_data1 TIMESTAMP,  p_data2 TIMESTAMP ) return double precision;
    FUNCTION bani_incasati_astazi return double precision;
    FUNCTION cel_mai_vandut_produs_al_lunii (p_luna number) return VARCHAR2;
-   FUNCTION adauga_incasare( p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number ;
+   FUNCTION adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number ;
 END pck_incasari;
 /
 CREATE OR REPLACE PACKAGE BODY pck_incasari AS
@@ -60,10 +60,10 @@ CREATE OR REPLACE PACKAGE BODY pck_incasari AS
       return null;
     END cel_mai_vandut_produs_al_lunii;  
     
-   FUNCTION adauga_incasare( p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number IS
+   FUNCTION adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number IS
       BEGIN
-      INSERT INTO CONTURI (NUME_PRODUS, CANTITATE, PRET, DATA_INCASARE)
-      VALUES ( p_nume_produs, p_cantitate, p_pret, p_datancasare);
+      INSERT INTO INCASARI (ID_PRODUS, NUME_PRODUS, CANTITATE, PRET, DATA_INCASARE)
+      VALUES ( p_id_produs, p_nume_produs, p_cantitate, p_pret, p_datancasare);
       COMMIT; 
       return 1;   
       exception
@@ -102,15 +102,11 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /    
-
-
- INSERT INTO CONTURI (NUME_PRODUS, CANTITATE, PRET, DATA_INCASARE)
-    VALUES ( 'Zimmerman', 7, 10, systimestamp );
-
-
-
-select * from (
-select nume_produs,count(nume_produs)  from incasari
-group by nume_produs
-order by count(nume_produs) desc )
-where rownum <2;
+set serveroutput on;
+declare 
+   l_result NUMBER ;
+begin   
+    l_result := pck_incasari.adauga_incasare(124, 'Zimmerman', 4, 28, systimestamp );
+    DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/   

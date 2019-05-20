@@ -1,7 +1,7 @@
 DROP SEQUENCE mese_id_seq ;
 /
 CREATE SEQUENCE mese_id_seq 
-  start with 51 
+  start with 51
   increment by 1;
 /
 CREATE or replace TRIGGER trigger_insert_new_id_mese
@@ -26,7 +26,7 @@ CREATE OR REPLACE PACKAGE pck_mese AS
   function preia_tabel_mese return linie_mese ;
   function adauga_masa (p_numar_masa number) return number ;
   function sterge_masa (p_numar_masa number) return number ;
-  --function modifica_nr_mese (p_numar_total_mese number) return number ;
+  function modifica_nr_mese (p_numar_total_mese number) return number ;
 END pck_mese;
 
 
@@ -132,6 +132,36 @@ CREATE OR REPLACE PACKAGE BODY pck_mese AS
       return 0;
    END sterge_masa;
    
+   function modifica_nr_mese (p_numar_total_mese number) return number IS
+   v_count_mese number;
+   v_count number;
+   BEGIN
+      select count(numar) into v_count_mese from mese;
+      v_count := v_count_mese;
+      IF v_count_mese < p_numar_total_mese THEN
+      WHILE v_count_mese < p_numar_total_mese LOOP
+        v_count := v_count + 1;
+        INSERT INTO MESE (NUMAR, STATUS)
+        VALUES (v_count, 'disponibila');
+        v_count_mese := v_count_mese + 1;
+      END LOOP;
+      ELSIF v_count_mese > p_numar_total_mese THEN
+      WHILE v_count_mese > p_numar_total_mese LOOP
+        
+        DELETE FROM COMENZI WHERE NUMAR_MASA = v_count;
+        DELETE FROM ISTORIC WHERE NUMAR_MASA = v_count;
+        DELETE FROM MESE WHERE NUMAR = v_count;
+        v_count_mese := v_count_mese - 1;
+        v_count := v_count - 1;
+      END LOOP;
+      end if;
+      COMMIT; 
+      return 1;   
+      --exception
+      --when OTHERS then
+    --return 0;
+   END modifica_nr_mese;
+   
 END pck_mese;
 
 
@@ -213,7 +243,6 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
--- de revazut !!
 set serveroutput on;
 declare 
    l_result NUMBER;
@@ -224,5 +253,16 @@ begin
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
-  
+set serveroutput on;
+declare 
+   l_result NUMBER;
+begin   
+    l_result := pck_mese.modifica_nr_mese(54);
+    DBMS_OUTPUT.PUT_LINE(l_result);
+end;
+/
 
+
+select max(numar) from mese;
+/
+select count(numar) from mese
