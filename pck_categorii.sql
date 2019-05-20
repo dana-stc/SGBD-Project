@@ -21,7 +21,7 @@ CREATE OR REPLACE PACKAGE pck_categorii AS
     FUNCTION adauga_categorie (p_nume_categorie varchar2) return number ;
     FUNCTION sterge_categorie ( p_id_categorie number) return number ;
     FUNCTION preia_tabel_categorii return linie_categorie ;
-    -- FUNCTION inlocuire_categorie( p_id_vechi number, p_id_nou number) return number ;
+    FUNCTION inlocuire_categorie( p_id_vechi number, p_id_nou number) return number ;
 END pck_categorii;
 
 /
@@ -40,8 +40,6 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
         return 0;
    END editeaza_nume_categorie;
 
-
-
   FUNCTION adauga_categorie (p_nume_categorie varchar2) return number IS
       v_id_categorie CATEGORII.ID_CATEGORIE%type;
       BEGIN
@@ -53,7 +51,6 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       when OTHERS then
       return 0;
   END adauga_categorie;
-
 
   FUNCTION sterge_categorie ( p_id_categorie number) return number IS
   v_number number;
@@ -69,7 +66,6 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       return 0;
   END sterge_categorie;
   
-
   FUNCTION preia_tabel_categorii return linie_categorie IS
       lista_categorii linie_categorie;
       BEGIN
@@ -80,9 +76,27 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       return null;
   end preia_tabel_categorii;
 
-
+  FUNCTION inlocuire_categorie( p_id_vechi number, p_id_nou number) return number IS
+  BEGIN
+        UPDATE CATEGORII
+        SET  
+        ID_CATEGORIE = p_id_nou
+        WHERE ID_CATEGORIE = p_id_vechi;
+        UPDATE leg_cat_prod
+        SET  
+        ID_CATEGORIE = p_id_nou
+        WHERE ID_CATEGORIE = p_id_vechi;
+        COMMIT; 
+        return 1;   
+      	exception
+      	when OTHERS then
+      	return 0;
+  END inlocuire_categorie;
+  
+  
 END pck_categorii;
 /
+
 
 
 set serveroutput on;
@@ -122,13 +136,20 @@ declare
    l_result pck_categorii.linie_categorie;
 begin   
    l_result := pck_categorii.preia_tabel_categorii();
-     for i in l_result.first..l_result.last loop
-        if l_result.exists(i) then 
-           DBMS_OUTPUT.PUT_LINE( l_result(i).ID_CATEGORIE||' - '||l_result(i).NUME);  
-        end if;
+    for i in l_result.first..l_result.last loop
+    if l_result.exists(i) then 
+    DBMS_OUTPUT.PUT_LINE( l_result(i).ID_CATEGORIE||' - '||l_result(i).NUME);  
+    end if;
     end loop;   
 end;
-
+/
+set serveroutput on;
+declare 
+   l_result NUMBER;
+begin  
+    l_result := pck_categorii.inlocuire_categorie(3,18 );
+   DBMS_OUTPUT.PUT_LINE(l_result);
+end;
 
 
 /

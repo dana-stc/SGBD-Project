@@ -189,10 +189,10 @@ declare
    l_result pck_produse.LINIE_PRODUS;
 begin   
    l_result := pck_produse.preia_tabel_produse();
-     for i in l_result.first..l_result.last loop
-        if l_result.exists(i) then 
-           DBMS_OUTPUT.PUT_LINE( l_result(i).id_produs||' - '||l_result(i).nume_produs || ' - '||l_result(i).pret || ' - '||l_result(i).descriere);  
-        end if;
+    for i in l_result.first..l_result.last loop
+    if l_result.exists(i) then 
+    DBMS_OUTPUT.PUT_LINE( l_result(i).id_produs||' - '||l_result(i).nume_produs || ' - '||l_result(i).pret || ' - '||l_result(i).descriere);  
+    end if;
     end loop;   
 end;
 /
