@@ -17,11 +17,14 @@ END;
 
 CREATE OR REPLACE PACKAGE pck_produse AS
   TYPE LINIE_PRODUS IS TABLE OF PRODUSE%ROWTYPE;
+  CURSOR cursor_produs IS  SELECT p.* FROM produse p join LEG_STOC s on p.id_produs = s.id_produs;
+  TYPE linie_produs_2 IS TABLE OF cursor_produs%ROWTYPE;
   FUNCTION adauga_produs (p_nume_produs varchar2, p_pret number, p_descriere varchar2, p_id_categorie number, p_stoc number ) return number;
   FUNCTION editeaza_produs ( p_id_produs number, p_pret_nou number, p_descriere_noua varchar2, p_id_categorie_noua number ) return number ;
   FUNCTION sterge_produs ( p_id_produs number ) return number;
   FUNCTION editeaza_stoc ( p_id_produs number, p_stoc_nou number ) return number ;
   FUNCTION preia_tabel_produse return LINIE_PRODUS ;
+  FUNCTION stoc_mai_mic_ca_valoare ( p_stoc number )  return LINIE_PRODUS_2 ;
 END pck_produse;
 
 
@@ -101,7 +104,24 @@ CREATE OR REPLACE PACKAGE BODY pck_produse AS
       BEGIN
       SELECT * BULK COLLECT INTO lista_produse FROM produse;
       return lista_produse;  
+      exception
+      when OTHERS then
+      return null;
    end preia_tabel_produse;
+   
+   
+   FUNCTION stoc_mai_mic_ca_valoare ( p_stoc number )  return LINIE_PRODUS_2 is
+    lista_produse linie_produs_2;
+   BEGIN
+        open cursor_produs;
+        SELECT p.* BULK COLLECT INTO lista_produse FROM produse p join LEG_STOC s on p.id_produs = s.id_produs
+        where stoc < p_stoc;
+        close cursor_produs;     
+        return lista_produse;
+        exception
+        when OTHERS then
+        return null;
+   END stoc_mai_mic_ca_valoare;
 
 
 END pck_produse;
@@ -174,6 +194,20 @@ begin
            DBMS_OUTPUT.PUT_LINE( l_result(i).id_produs||' - '||l_result(i).nume_produs || ' - '||l_result(i).pret || ' - '||l_result(i).descriere);  
         end if;
     end loop;   
+end;
+/
+
+
+set serveroutput on;
+declare 
+   l_result pck_produse.LINIE_PRODUS_2;
+begin   
+   l_result := pck_produse.stoc_mai_mic_ca_valoare(10);
+   for i in l_result.first..l_result.last loop
+          if l_result.exists(i) then -- daca incerc sa afisez ceva ce nu exista se va produce o eroare
+          DBMS_OUTPUT.PUT_LINE(i||' - '||l_result(i).nume_produs);  -- afisam pozitia si valoarea
+          end if;
+        end loop;
 end;
 
 

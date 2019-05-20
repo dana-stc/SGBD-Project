@@ -21,44 +21,45 @@ CREATE OR REPLACE PACKAGE pck_conturi AS
    function sterge_utilizator(p_utilizator varchar2) return number ;
    function modifica_utilizator(p_utilizator varchar2, p_parola_noua varchar2, p_is_admin number) return number ;
    function preia_tabel_utilizatori return linie_cont ;
+   function is_admin (p_utilizator varchar2) return number ;
 END pck_conturi;
 
 CREATE OR REPLACE PACKAGE BODY pck_conturi AS
 
     function utilizator_valid( p_utilizator varchar2, p_parola varchar2 ) RETURN number IS 
-    CURSOR lista_useri_parole  IS select utilizator, parola  from CONTURI;
-    v_user CONTURI.UTILIZATOR%type;
-    v_password CONTURI.PAROLA%type;
-    BEGIN
-    OPEN lista_useri_parole;
-    LOOP
+        CURSOR lista_useri_parole  IS select utilizator, parola  from CONTURI;
+        v_user CONTURI.UTILIZATOR%type;
+        v_password CONTURI.PAROLA%type;
+        BEGIN
+        OPEN lista_useri_parole;
+        LOOP
         FETCH lista_useri_parole INTO v_user, v_password;
         EXIT WHEN lista_useri_parole%NOTFOUND;   
-    IF trim(v_user) = trim(p_utilizator) and trim(v_password) = trim(p_parola) THEN  
+        IF trim(v_user) = trim(p_utilizator) and trim(v_password) = trim(p_parola) THEN  
         return 1;
         ELSIF  v_user = p_utilizator and v_password != p_parola THEN 
         return 0;    
-     END IF;
-    END LOOP;
-    return -1;
-   CLOSE lista_useri_parole;  
+        END IF;
+        END LOOP;
+        return -1;
+        CLOSE lista_useri_parole;  
    END utilizator_valid;
 
 
    function inserare_utilizator( p_utilizator varchar2, p_parola varchar2, p_is_admin number ) return number IS
-   BEGIN
-    INSERT INTO CONTURI (UTILIZATOR, PAROLA, ISADMIN)
-    VALUES (p_utilizator, p_parola, p_is_admin);
-    COMMIT; 
-    return 1;   
-    exception
-    when OTHERS then
-    return 0;
+      BEGIN
+      INSERT INTO CONTURI (UTILIZATOR, PAROLA, ISADMIN)
+      VALUES (p_utilizator, p_parola, p_is_admin);
+      COMMIT; 
+      return 1;   
+      exception
+      when OTHERS then
+      return 0;
    END inserare_utilizator;
 
 
     function sterge_utilizator(p_utilizator varchar2) return number IS
-    BEGIN
+      BEGIN
       DELETE FROM ISTORIC WHERE UTILIZATOR = p_utilizator;
       DELETE FROM CONTURI WHERE UTILIZATOR = p_utilizator;
       COMMIT; 
@@ -70,7 +71,7 @@ CREATE OR REPLACE PACKAGE BODY pck_conturi AS
 
     
     function modifica_utilizator(p_utilizator varchar2, p_parola_noua varchar2, p_is_admin number) return number IS 
-    BEGIN
+        BEGIN
         UPDATE CONTURI
         SET  
         PAROLA = p_parola_noua,
@@ -89,12 +90,37 @@ CREATE OR REPLACE PACKAGE BODY pck_conturi AS
       BEGIN
       SELECT * BULK COLLECT INTO lista_conturi FROM conturi;
       return lista_conturi;  
+      exception
+      when OTHERS then
+      return null;
    end preia_tabel_utilizatori;
   
    
+    function is_admin (p_utilizator varchar2) return number IS
+      v_is_admin number;
+      BEGIN
+      SELECT isadmin into v_is_admin from conturi where utilizator = p_utilizator;
+      return v_is_admin;  
+      EXCEPTION
+      WHEN no_data_found THEN
+      return -1;
+    end is_admin;
+    
+    
 END pck_conturi;
+/
 
 
+
+set serveroutput on;
+declare 
+   v_utilizator varchar2(30);
+   l_result NUMBER;
+begin   
+    v_utilizator := 'imprintdisobey81f';
+    l_result := pck_conturi.is_admin(v_utilizator );
+    DBMS_OUTPUT.PUT_LINE(l_result);
+end;
 /  
 set serveroutput on;
 declare 
@@ -147,9 +173,9 @@ declare
    l_result pck_conturi.linie_cont;
 begin   
    l_result := pck_conturi.preia_tabel_utilizatori();
-     for i in l_result.first..l_result.last loop
-        if l_result.exists(i) then 
-           DBMS_OUTPUT.PUT_LINE( l_result(i).id_cont||' - '||l_result(i).utilizator || ' - '||l_result(i).parola || ' - '||l_result(i).isadmin);  
-        end if;
+    for i in l_result.first..l_result.last loop
+    if l_result.exists(i) then 
+    DBMS_OUTPUT.PUT_LINE( l_result(i).id_cont||' - '||l_result(i).utilizator || ' - '||l_result(i).parola || ' - '||l_result(i).isadmin);  
+    end if;
     end loop;   
 end;

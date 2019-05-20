@@ -75,6 +75,9 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       BEGIN
       SELECT * BULK COLLECT INTO lista_categorii FROM CATEGORII;
       return lista_categorii;  
+      exception
+      when OTHERS then
+      return null;
   end preia_tabel_categorii;
 
 
