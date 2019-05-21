@@ -54,13 +54,23 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
 
   FUNCTION sterge_categorie ( p_id_categorie number) return number IS
   v_number number;
+  CURSOR lista_produse IS select id_produs from LEG_CAT_PROD where LEG_CAT_PROD.id_categorie = p_id_categorie;
+  v_produs produse.id_produs%type;
   BEGIN
-      SELECT COUNT(*) into v_number FROM LEG_CAT_PROD WHERE ID_CATEGORIE = p_id_categorie;
-      IF v_number = 0  THEN
-      DELETE FROM CATEGORII WHERE ID_CATEGORIE = p_id_categorie;
+      OPEN lista_produse;
+      LOOP
+      FETCH lista_produse into v_produs;
+      EXIT WHEN lista_produse%NOTFOUND;
+      DELETE FROM COMENZI WHERE COMENZI.id_produs = v_produs;
+      DELETE FROM INCASARI WHERE INCASARI.id_produs = v_produs;
+      delete from leg_stoc where leg_stoc.id_produs = v_produs;
+      DELETE FROM LEG_CAT_PROD WHERE ID_CATEGORIE = p_id_categorie and id_produs = v_produs;
+      DELETE FROM PRODUSE where PRODUSE.id_produs = v_produs;
+      END LOOP;  
+      
+      DELETE FROM CATEGORII WHERE ID_CATEGORIE = p_id_categorie;     
       COMMIT; 
       return 1;
-      END IF;
       exception
       when OTHERS then
       return 0;
@@ -121,16 +131,18 @@ begin
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
+
 set serveroutput on;
 declare 
    v_id_categorie number;
    l_result NUMBER;
 begin  
-    v_id_categorie := 16;  
+    v_id_categorie := 2;  
     l_result := pck_categorii.sterge_categorie(v_id_categorie);
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
+
 set serveroutput on;
 declare 
    l_result pck_categorii.linie_categorie;
@@ -151,10 +163,11 @@ begin
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 
-
 /
-select count(*) from categorii;
+select count(*) from produse;
 /
 select count(*) from leg_cat_prod;
+
+
 
 
