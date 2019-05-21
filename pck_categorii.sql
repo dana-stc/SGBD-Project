@@ -62,7 +62,6 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       FETCH lista_produse into v_produs;
       EXIT WHEN lista_produse%NOTFOUND;
       DELETE FROM COMENZI WHERE COMENZI.id_produs = v_produs;
-      DELETE FROM INCASARI WHERE INCASARI.id_produs = v_produs;
       delete from leg_stoc where leg_stoc.id_produs = v_produs;
       DELETE FROM LEG_CAT_PROD WHERE ID_CATEGORIE = p_id_categorie and id_produs = v_produs;
       DELETE FROM PRODUSE where PRODUSE.id_produs = v_produs;
