@@ -66,8 +66,7 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
       delete from leg_stoc where leg_stoc.id_produs = v_produs;
       DELETE FROM LEG_CAT_PROD WHERE ID_CATEGORIE = p_id_categorie and id_produs = v_produs;
       DELETE FROM PRODUSE where PRODUSE.id_produs = v_produs;
-      END LOOP;  
-      
+      END LOOP;     
       DELETE FROM CATEGORII WHERE ID_CATEGORIE = p_id_categorie;     
       COMMIT; 
       return 1;
@@ -88,10 +87,6 @@ CREATE OR REPLACE PACKAGE BODY pck_categorii AS
 
   FUNCTION inlocuire_categorie( p_id_vechi number, p_id_nou number) return number IS
   BEGIN
-        UPDATE CATEGORII
-        SET  
-        ID_CATEGORIE = p_id_nou
-        WHERE ID_CATEGORIE = p_id_vechi;
         UPDATE leg_cat_prod
         SET  
         ID_CATEGORIE = p_id_nou
@@ -131,18 +126,16 @@ begin
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
-
 set serveroutput on;
 declare 
    v_id_categorie number;
    l_result NUMBER;
 begin  
-    v_id_categorie := 2;  
+    v_id_categorie := 6;  
     l_result := pck_categorii.sterge_categorie(v_id_categorie);
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
-
 set serveroutput on;
 declare 
    l_result pck_categorii.linie_categorie;
@@ -159,7 +152,7 @@ set serveroutput on;
 declare 
    l_result NUMBER;
 begin  
-    l_result := pck_categorii.inlocuire_categorie(3,18 );
+    l_result := pck_categorii.inlocuire_categorie(3,4);
    DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 
@@ -167,6 +160,11 @@ end;
 select count(*) from produse;
 /
 select count(*) from leg_cat_prod;
+
+/
+
+522131
+
 
 
 

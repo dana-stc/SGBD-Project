@@ -26,7 +26,7 @@ CREATE OR REPLACE PACKAGE pck_mese AS
   function preia_tabel_mese return linie_mese ;
   function adauga_masa (p_numar_masa number) return number ;
   function sterge_masa (p_numar_masa number) return number ;
-  function modifica_nr_mese (p_numar_total_mese number) return number ;
+  function modifica_nr_mese(p_numar_total_mese number) return number ;
 END pck_mese;
 
 
@@ -147,7 +147,6 @@ CREATE OR REPLACE PACKAGE BODY pck_mese AS
       END LOOP;
       ELSIF v_count_mese > p_numar_total_mese THEN
       WHILE v_count_mese > p_numar_total_mese LOOP
-        
         DELETE FROM COMENZI WHERE NUMAR_MASA = v_count;
         DELETE FROM ISTORIC WHERE NUMAR_MASA = v_count;
         DELETE FROM MESE WHERE NUMAR = v_count;
@@ -159,7 +158,7 @@ CREATE OR REPLACE PACKAGE BODY pck_mese AS
       return 1;   
       --exception
       --when OTHERS then
-    --return 0;
+      --return 0;
    END modifica_nr_mese;
    
 END pck_mese;
@@ -226,11 +225,11 @@ declare
    l_result pck_mese.linie_mese;
 begin   
    l_result := pck_mese.preia_tabel_mese();
-     for i in l_result.first..l_result.last loop
-        if l_result.exists(i) then 
-           DBMS_OUTPUT.PUT_LINE( l_result(i).id_MASA||' - '||l_result(i).NUMAR || ' - '||l_result(i).STATUS || ' - '||l_result(i).DATA_REZERVARE || ' - '||l_result(i).MENTIUNE);  
-        end if;
-    end loop;   
+   for i in l_result.first..l_result.last loop
+   if l_result.exists(i) then 
+   DBMS_OUTPUT.PUT_LINE( l_result(i).id_MASA||' - '||l_result(i).NUMAR || ' - '||l_result(i).STATUS || ' - '||l_result(i).DATA_REZERVARE || ' - '||l_result(i).MENTIUNE);  
+   end if;
+   end loop;   
 end;
 /
 set serveroutput on;
@@ -257,7 +256,7 @@ set serveroutput on;
 declare 
    l_result NUMBER;
 begin   
-    l_result := pck_mese.modifica_nr_mese(54);
+    l_result := pck_mese.modifica_nr_mese(30);
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /
@@ -265,4 +264,4 @@ end;
 
 select max(numar) from mese;
 /
-select count(numar) from mese
+select count(numar) from mese;
