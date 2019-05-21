@@ -161,10 +161,3 @@ select count(*) from produse;
 select count(*) from leg_cat_prod;
 
 /
-
-522131
-
-
-
-
-
