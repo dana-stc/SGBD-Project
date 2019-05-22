@@ -19,9 +19,10 @@ CREATE OR REPLACE PACKAGE pck_mese AS
   TYPE linie_mese IS TABLE OF mese%ROWTYPE;
   TYPE linie_mese_2 IS TABLE OF mese%ROWTYPE;
   function rezervari_neexpirate return linie_mese_2 ;
-  function set_masa_disponibila(p_numar_masa number) return number;
-  function set_masa_rezervata(p_numar_masa number) return number;
-  function set_masa_ocupata(p_numar_masa number) return number;
+  procedure anulare_rezervare(p_numar_masa number);
+  procedure set_masa_disponibila(p_numar_masa number);
+  procedure set_masa_rezervata(p_numar_masa number);
+  procedure set_masa_ocupata(p_numar_masa number);
   function adauga_rezervare(p_numar_masa number, p_data_rezervare timestamp, p_mentiune varchar2) return number;
   function preia_tabel_mese return linie_mese ;
   function adauga_masa (p_numar_masa number) return number ;
@@ -42,50 +43,58 @@ CREATE OR REPLACE PACKAGE BODY pck_mese AS
       return null;
  end rezervari_neexpirate;
 
- function set_masa_disponibila(p_numar_masa number) RETURN number IS 
+ procedure anulare_rezervare(p_numar_masa number) IS 
+ BEGIN
+        UPDATE MESE
+        SET DATA_REZERVARE=null,MENTIUNE=''
+        WHERE NUMAR = p_numar_masa;
+        COMMIT; 
+      	exception
+      	when OTHERS then
+            dbms_output.put_line( sqlerrm );
+   END anulare_rezervare;
+   
+
+ procedure set_masa_disponibila(p_numar_masa number) IS 
  BEGIN
         UPDATE MESE
         SET  
-        STATUS = 'disponibila'
+        STATUS = 'disponibila', DATA_REZERVARE=null,MENTIUNE=''
         WHERE NUMAR = p_numar_masa;
         COMMIT; 
-        return 1;   
       	exception
       	when OTHERS then
-      	return 0;
+            dbms_output.put_line( sqlerrm );
    END set_masa_disponibila;
    
- function set_masa_rezervata(p_numar_masa number) RETURN number IS  
+ procedure set_masa_rezervata(p_numar_masa number) IS  
  BEGIN
         UPDATE MESE
         SET  
         STATUS = 'rezervata'
         WHERE NUMAR = p_numar_masa;
         COMMIT; 
-      	return 1;   
       	exception
       	when OTHERS then
-      	return 0;
+            dbms_output.put_line( sqlerrm );
    END set_masa_rezervata;
        
- function set_masa_ocupata(p_numar_masa number) RETURN number IS 
+ procedure set_masa_ocupata(p_numar_masa number)IS 
  BEGIN
         UPDATE MESE
         SET  
         STATUS = 'ocupata'
         WHERE NUMAR = p_numar_masa;
         COMMIT; 
-      	return 1;   
       	exception
       	when OTHERS then
-      	return 0;
+            dbms_output.put_line( sqlerrm );
    END set_masa_ocupata;
       
   function adauga_rezervare(p_numar_masa number, p_data_rezervare timestamp, p_mentiune varchar2) return number IS
- BEGIN
+    BEGIN
         UPDATE MESE
         SET  
-        STATUS = 'rezervata',
         DATA_REZERVARE = p_data_rezervare,
         MENTIUNE = p_mentiune
         WHERE NUMAR = p_numar_masa;

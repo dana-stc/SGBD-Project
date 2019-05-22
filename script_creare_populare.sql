@@ -342,6 +342,10 @@ DROP INDEX INDEX_leg_catProd_idCategorie;
 
 CREATE INDEX INDEX_leg_catProd_idCategorie ON leg_cat_prod (id_categorie);
 
+DROP INDEX INDEX_leg_catProd_idProdus;
+
+CREATE INDEX INDEX_leg_catProd_idProdus ON leg_cat_prod (id_produs);
+
 DROP INDEX INDEX_incasari_produs_data;
 
 CREATE INDEX INDEX_incasari_produs_data ON incasari (id_produs, nume_produs, data_incasare);
@@ -371,4 +375,3 @@ select * from view_ProduseCategorii;
 --select * from istoric;
 --select * from leg_cat_prod;
 --select * from leg_stoc;
-

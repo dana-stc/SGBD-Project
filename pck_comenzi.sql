@@ -18,8 +18,8 @@ CREATE OR REPLACE PACKAGE pck_comenzi AS
   TYPE LINIE_COMANDA IS TABLE OF COMENZI%ROWTYPE;
   FUNCTION comenzi_masa ( p_numar_masa number ) return LINIE_COMANDA ;
   FUNCTION total_comenzi_masa ( p_numar_masa number ) return float ;
-  FUNCTION adauga_comanda ( p_id_produs number, p_numar_masa number, p_cantitate number, p_pret float, p_data_comanda timestamp ) return number ;
-  FUNCTION sterge_comanda ( p_id_comanda number ) return number ;
+  procedure adauga_comanda ( p_id_produs number, p_numar_masa number, p_cantitate number, p_pret float, p_data_comanda timestamp );
+  procedure sterge_comanda ( p_id_comanda number );
 END pck_comenzi;
 
 
@@ -38,32 +38,30 @@ CREATE OR REPLACE PACKAGE BODY pck_comenzi AS
    FUNCTION total_comenzi_masa ( p_numar_masa number ) return float IS
    v_suma_pret float;
    BEGIN
-      select sum(pret) into v_suma_pret from comenzi where numar_masa = p_numar_masa;
+      select sum(pret*cantitate) into v_suma_pret from comenzi where numar_masa = p_numar_masa;
       return v_suma_pret;
       exception
       when OTHERS then
       return null;
    END total_comenzi_masa;
   
-   FUNCTION adauga_comanda ( p_id_produs number, p_numar_masa number, p_cantitate number, p_pret float, p_data_comanda timestamp ) return number IS
+   procedure adauga_comanda ( p_id_produs number, p_numar_masa number, p_cantitate number, p_pret float, p_data_comanda timestamp ) IS
       BEGIN
       INSERT INTO COMENZI (numar_masa, id_produs, cantitate, pret, data_comanda)
       VALUES (p_numar_masa, p_id_produs, p_cantitate, p_pret, p_data_comanda);
       COMMIT; 
-      return 1;   
       exception
       when OTHERS then
-      return 0;
+        dbms_output.put_line( sqlerrm );
    END adauga_comanda;
   
-   FUNCTION sterge_comanda ( p_id_comanda number ) return number IS
+   procedure sterge_comanda ( p_id_comanda number ) IS
    BEGIN
       DELETE FROM comenzi WHERE id_comanda = p_id_comanda;
       COMMIT; 
-      return 1;   
       exception
       when OTHERS then
-      return 0;
+        dbms_output.put_line( sqlerrm );
    END sterge_comanda;
 
 END pck_comenzi;
@@ -86,7 +84,7 @@ set serveroutput on;
 declare 
    l_result float;
 begin   
-    l_result := pck_comenzi.total_comenzi_masa(21);
+    l_result := pck_comenzi.total_comenzi_masa(1);
     DBMS_OUTPUT.PUT_LINE(l_result);
 end;
 /

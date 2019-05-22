@@ -19,7 +19,7 @@ CREATE OR REPLACE PACKAGE pck_incasari AS
    FUNCTION bani_incasati_interval ( p_data1 TIMESTAMP,  p_data2 TIMESTAMP ) return double precision;
    FUNCTION bani_incasati_astazi return double precision;
    FUNCTION cel_mai_vandut_produs_al_lunii (p_luna number) return VARCHAR2;
-   FUNCTION adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number ;
+   procedure adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp );
 END pck_incasari;
 /
 CREATE OR REPLACE PACKAGE BODY pck_incasari AS
@@ -60,21 +60,21 @@ CREATE OR REPLACE PACKAGE BODY pck_incasari AS
       return null;
     END cel_mai_vandut_produs_al_lunii;  
     
-   FUNCTION adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) return number IS
+   procedure adauga_incasare( p_id_produs number, p_nume_produs varchar2, p_cantitate number, p_pret float, p_datancasare timestamp ) IS
       BEGIN
       INSERT INTO INCASARI (ID_PRODUS, NUME_PRODUS, CANTITATE, PRET, DATA_INCASARE)
       VALUES ( p_id_produs, p_nume_produs, p_cantitate, p_pret, p_datancasare);
       COMMIT; 
-      return 1;   
       exception
       when OTHERS then
-      return 0;
+        dbms_output.put_line( sqlerrm );
   END adauga_incasare;
   
     
 END pck_incasari;
 /
 
+select * from incasari where rownum<10 order by id desc;
 
 set serveroutput on;
 declare 
